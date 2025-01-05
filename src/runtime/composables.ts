@@ -1,6 +1,6 @@
 import { hash } from 'ohash'
 import { print } from 'graphql'
-import type { ApolloClient, OperationVariables, QueryOptions, DefaultContext } from '@apollo/client'
+import type { ApolloClient, OperationVariables, QueryOptions, DefaultContext, FetchPolicy } from '@apollo/client'
 import type { AsyncData, AsyncDataOptions, NuxtError, NuxtApp } from 'nuxt/app'
 import type { RestartableClient } from './ws'
 import { ref, unref, isRef, reactive, useCookie, useNuxtApp, useAsyncData } from '#imports'
@@ -36,9 +36,9 @@ type TAsyncQuery<T> = {
    */
   context?: DefaultContext
   /**
-   * If `true`, this overrides the default fetchPolicy for the Apollo Client to `cache-first`.
+   * Overrides the default fetchPolicy for the Apollo Client.
    * */
-  cache?: boolean
+  fetchPolicy?: FetchPolicy
 }
 
 /**
@@ -119,7 +119,7 @@ const prep = <T> (...args: any[]) => {
   let query: TQuery<T>
   let variables: TVariables<T>
 
-  let cache: boolean
+  let fetchPolicy: FetchPolicy | undefined
   let clientId: ApolloClientKeys | undefined
   let context: DefaultContext
 
@@ -129,7 +129,7 @@ const prep = <T> (...args: any[]) => {
     query = args?.[0]?.query
     variables = args?.[0]?.variables
 
-    cache = args?.[0]?.cache
+    fetchPolicy = args?.[0]?.fetchPolicy
     context = args?.[0]?.context
     clientId = args?.[0]?.clientId
 
@@ -168,7 +168,7 @@ const prep = <T> (...args: any[]) => {
   const fn = () => clients![clientId!]?.query<T>({
     query,
     variables: unref(variables) || undefined,
-    ...(cache && { fetchPolicy: 'cache-first' }),
+    fetchPolicy,
     context
   }).then(r => r.data)
 
