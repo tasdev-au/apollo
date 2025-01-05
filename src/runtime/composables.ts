@@ -168,7 +168,7 @@ const prep = <T> (...args: any[]) => {
   const fn = () => clients![clientId!]?.query<T>({
     query,
     variables: unref(variables) || undefined,
-    fetchPolicy,
+    fetchPolicy: fetchPolicy || 'cache-first',
     context
   }).then(r => r.data)
 
